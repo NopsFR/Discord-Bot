@@ -1,0 +1,52 @@
+{
+  "wipes": [
+    {
+      "server": "Spoonkid Saturdays",
+      "date": "Saturday, 27 June 2026 17:00",
+      "notes": "2 day Wipe",
+      "updatedAt": "2026-06-24T23:46:11.725Z"
+    }
+  ],
+  "switches": [],
+  "steamLinks": {},
+  "craftBinds": {
+    "1377772040571846728:boom": {
+      "command": "boom",
+      "items": [
+        "Rocket launcher",
+        "Rockets",
+        "Explosive ammo",
+        "C4",
+        "GP",
+        "Sulfur"
+      ],
+      "notes": "",
+      "updatedAt": "2026-06-24T23:52:07.573Z"
+    },
+    "1377772040571846728:fullkit": {
+      "command": "fullkit",
+      "items": [
+        "Metal facemask",
+        "Metal chestplate",
+        "Hoodie",
+        "Pants",
+        "Roadsign gloves",
+        "Boots",
+        "Meds",
+        "Ammo"
+      ],
+      "notes": "",
+      "updatedAt": "2026-06-24T23:53:41.752Z"
+    }
+  },
+  "clanInvites": {
+    "claninvite:1506043658217193704": {
+      "roleId": "1506043658217193704",
+      "mass": false,
+      "createdAt": "2026-06-24T23:47:11.740Z",
+      "createdBy": "1377772040571846728"
+    }
+  },
+  "intelLists": {},
+  "eventStats": {}
+}

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rust Discord Bot Panel</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Rust Discord Bot</p>
+          <h1>Control Panel</h1>
+        </div>
+        <button id="refresh" type="button">Refresh</button>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Status</h2>
+          <dl id="status"></dl>
+        </article>
+
+        <article class="panel">
+          <h2>Add Wipe</h2>
+          <form id="wipe-form">
+            <label>
+              Server
+              <input name="server" placeholder="Rustoria EU Main" required>
+            </label>
+            <label>
+              Date
+              <input name="date" placeholder="2026-07-04 19:00 UK" required>
+            </label>
+            <label>
+              Notes
+              <input name="notes" placeholder="Weekly map wipe">
+            </label>
+            <button type="submit">Save Wipe</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>Saved Wipes</h2>
+        <div id="wipes" class="wipes"></div>
+      </section>
+    </main>
+
+    <script src="/panel.js"></script>
+  </body>
+</html>
