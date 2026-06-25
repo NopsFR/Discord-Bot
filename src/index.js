@@ -2,6 +2,7 @@ const { Client, Events, GatewayIntentBits } = require('discord.js');
 const { config, hasDiscordConfig } = require('./config');
 const { commandMap, handleButton } = require('./commands');
 const { createWebPanel } = require('./webPanel');
+const rustplusRuntime = require('./rustplus/runtime');
 
 const client = new Client({
   intents: [
@@ -20,8 +21,14 @@ process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
 });
 
-client.once(Events.ClientReady, () => {
+client.once(Events.ClientReady, async () => {
   console.log(`Discord bot logged in as ${client.user.tag}`);
+  try {
+    await rustplusRuntime.init(client);
+    console.log('Rust+ runtime initialised (FCM listeners + server connections).');
+  } catch (error) {
+    console.error('Failed to initialise Rust+ runtime:', error);
+  }
 });
 
 client.on('interactionCreate', async (interaction) => {

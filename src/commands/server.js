@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const rustPlus = require('../services/rustPlusService');
+const { getInstanceOrNull } = require('../rustplus/active');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,7 +11,8 @@ module.exports = {
     await interaction.deferReply();
 
     try {
-      const info = await rustPlus.getServerInfo();
+      const instance = getInstanceOrNull(interaction);
+      const info = instance ? await instance.getInfo() : await rustPlus.getServerInfo();
       const embed = new EmbedBuilder()
         .setTitle(info.name || 'Rust Server')
         .setColor(0xd97706)

@@ -20,8 +20,30 @@ const move = require('./move');
 const noreact = require('./noreact');
 const nosteam = require('./nosteam');
 const player = require('./player');
+const pair = require('./pair');
+const rustservers = require('./rustservers');
+const device = require('./device');
+const vending = require('./vending');
+const track = require('./track');
+const rustcamera = require('./rustcamera');
+const rustlabs = require('./rustlabs');
+const leader = require('./leader');
+const deaths = require('./deaths');
+const teamstats = require('./teamstats');
+const turret = require('./turret');
 
 const commands = [
+  pair,
+  rustservers,
+  device,
+  vending,
+  track,
+  rustcamera,
+  rustlabs,
+  leader,
+  deaths,
+  teamstats,
+  turret,
   changenicknames,
   changesteam,
   checkgamebans,
