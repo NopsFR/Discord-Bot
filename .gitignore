@@ -1,5 +1,10 @@
 node_modules/
 .env
+
+# Rust+ credentials & pairing data (contain Steam-linked auth tokens)
+rustplus.config.json
+data/credentials.json
+data/rustplus.json
 data/*.jpg
 data/*.png
 data/*.tmp

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const rustPlus = require('../services/rustPlusService');
+const { getInstanceOrNull } = require('../rustplus/active');
 
 function formatMember(member) {
   const name = member.name || member.displayName || member.steamId || member.id || 'Unknown player';
@@ -18,7 +19,8 @@ module.exports = {
     await interaction.deferReply();
 
     try {
-      const teamInfo = await rustPlus.getTeamInfo();
+      const instance = getInstanceOrNull(interaction);
+      const teamInfo = instance ? await instance.getTeamInfo() : await rustPlus.getTeamInfo();
       const members = teamInfo.members || teamInfo.teamMembers || [];
 
       if (!members.length) {

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rust+ Camera Station</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+      .camera-view { width: 100%; max-width: 640px; image-rendering: pixelated; border-radius: 8px; background: #000; }
+      .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Rust Discord Bot</p>
+          <h1>Camera Station</h1>
+        </div>
+        <button id="toggle" type="button">Start</button>
+      </section>
+
+      <section class="panel">
+        <p class="hint">Remote viewing & control of CCTV cameras, drones and turrets. Works when you are offline in game.</p>
+        <img id="view" class="camera-view" alt="camera feed">
+        <div class="controls">
+          <button data-dx="-25" data-dy="0">◀ Left</button>
+          <button data-dx="25" data-dy="0">Right ▶</button>
+          <button data-dx="0" data-dy="-25">▲ Up</button>
+          <button data-dx="0" data-dy="25">▼ Down</button>
+          <button data-buttons="1" data-dx="0" data-dy="0">Zoom / Fire</button>
+        </div>
+        <p id="status"></p>
+      </section>
+    </main>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const guild = params.get('guild') || '';
+      const id = params.get('id') || '';
+      const view = document.querySelector('#view');
+      const statusEl = document.querySelector('#status');
+      const toggle = document.querySelector('#toggle');
+      let timer = null;
+
+      async function refresh() {
+        try {
+          const res = await fetch(`/api/camera/frame?guild=${guild}&id=${encodeURIComponent(id)}&t=${Date.now()}`);
+          if (!res.ok) {
+            statusEl.textContent = `Error: ${(await res.json()).error}`;
+            return;
+          }
+          const blob = await res.blob();
+          view.src = URL.createObjectURL(blob);
+          statusEl.textContent = `Streaming ${id}`;
+        } catch (error) {
+          statusEl.textContent = `Error: ${error.message}`;
+        }
+      }
+
+      toggle.addEventListener('click', () => {
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+          toggle.textContent = 'Start';
+        } else {
+          refresh();
+          timer = setInterval(refresh, 1000);
+          toggle.textContent = 'Stop';
+        }
+      });
+
+      document.querySelectorAll('.controls button').forEach((button) => {
+        button.addEventListener('click', async () => {
+          await fetch('/api/camera/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              guild,
+              id,
+              buttons: Number(button.dataset.buttons || 0),
+              x: Number(button.dataset.dx || 0),
+              y: Number(button.dataset.dy || 0)
+            })
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

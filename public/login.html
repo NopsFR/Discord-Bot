@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rust+ Login</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Rust Discord Bot</p>
+          <h1>Rust+ Login</h1>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>1. Link your Steam / Rust+ account</h2>
+        <p id="status">Preparing your secure session…</p>
+        <button id="login" type="button" disabled>Login with Rust+</button>
+        <p class="hint">
+          A popup will open to <strong>companion-rust.facepunch.com</strong>. Sign in with Steam.
+          When it finishes, your account is linked automatically.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>2. Pair in game</h2>
+        <p>
+          After linking, open <strong>Rust+</strong> in game and pair your server and smart
+          devices. The bot receives the pairing notifications and connects within a few seconds.
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>Manual fallback</h2>
+        <p class="hint">
+          If the popup login can't capture your token (browser security), generate credentials with the
+          rustplus.js CLI (<code>npx @liamcottle/rustplus.js fcm-register</code>) and paste the contents of
+          <code>rustplus.config.json</code> below.
+        </p>
+        <form id="manual-form">
+          <label>
+            rustplus.config.json
+            <textarea name="config" rows="8" placeholder='{ "fcm_credentials": { ... }, "expo_push_token": "...", "rustplus_auth_token": "..." }' required></textarea>
+          </label>
+          <button type="submit">Submit credentials</button>
+        </form>
+        <p id="manual-status"></p>
+      </section>
+    </main>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const session = params.get('session');
+      const statusEl = document.querySelector('#status');
+      const loginButton = document.querySelector('#login');
+      const manualForm = document.querySelector('#manual-form');
+      const manualStatus = document.querySelector('#manual-status');
+
+      if (!session) {
+        statusEl.textContent = 'Missing session. Run /pair in Discord again.';
+      } else {
+        pollStatus();
+      }
+
+      async function pollStatus() {
+        try {
+          const res = await fetch(`/rustplus/session/${session}`);
+          if (!res.ok) {
+            statusEl.textContent = 'Session expired. Run /pair in Discord again.';
+            return;
+          }
+          const data = await res.json();
+          if (data.status === 'ready') {
+            statusEl.textContent = 'Ready. Click "Login with Rust+" to link your account.';
+            loginButton.disabled = false;
+          } else if (data.status === 'error') {
+            statusEl.textContent = `Registration error: ${data.error || 'unknown'}`;
+          } else {
+            statusEl.textContent = 'Registering push credentials with Google/Expo…';
+            setTimeout(pollStatus, 2000);
+          }
+        } catch {
+          setTimeout(pollStatus, 3000);
+        }
+      }
+
+      loginButton.addEventListener('click', () => {
+        const popup = window.open('https://companion-rust.facepunch.com/login', '', 'width=600,height=720');
+        statusEl.textContent = 'Waiting for you to finish the Steam login…';
+
+        // Inject a ReactNativeWebView.postMessage handler into the popup so we
+        // can capture the Rust+ auth token. Requires a browser launched with
+        // web security disabled (see the manual fallback otherwise).
+        const interval = setInterval(() => {
+          try {
+            popup.window.ReactNativeWebView = {
+              postMessage: async (message) => {
+                const auth = JSON.parse(message);
+                clearInterval(interval);
+                popup.close();
+                await sendToken(auth.Token);
+              }
+            };
+          } catch {
+            /* cross-origin until same security context */
+          }
+          if (popup.closed) {
+            clearInterval(interval);
+          }
+        }, 500);
+      });
+
+      async function sendToken(token) {
+        statusEl.textContent = 'Linking your account…';
+        const res = await fetch('/rustplus/callback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session, token })
+        });
+        const data = await res.json();
+        statusEl.textContent = res.ok
+          ? `Linked! SteamID ${data.steamId || ''}. You can close this page and pair in game.`
+          : `Error: ${data.error}`;
+      }
+
+      manualForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        manualStatus.textContent = 'Submitting…';
+        const config = manualForm.querySelector('textarea[name="config"]').value;
+        const res = await fetch('/rustplus/manual', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session, config })
+        });
+        const data = await res.json();
+        manualStatus.textContent = res.ok
+          ? `Linked! SteamID ${data.steamId || ''}. You can now pair your server in game.`
+          : `Error: ${data.error}`;
+      });
+    </script>
+  </body>
+</html>

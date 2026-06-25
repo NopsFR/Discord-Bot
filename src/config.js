@@ -20,6 +20,7 @@ const config = {
   guildId: process.env.DISCORD_GUILD_ID,
   adminRoleName: process.env.ADMIN_ROLE_NAME || 'Admin',
   port: Number(process.env.PORT || 3001),
+  publicUrl: (process.env.PUBLIC_URL || '').replace(/\/$/, ''),
   panelUsername: process.env.PANEL_USERNAME || '',
   panelPassword: process.env.PANEL_PASSWORD || '',
   steamApiKey: process.env.STEAM_API_KEY || '',
